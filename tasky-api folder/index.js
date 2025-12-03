@@ -8,7 +8,10 @@ const app = express();
 
 const port = process.env.PORT;
 
-// use the tasks router for /api/tasks
+// parse JSON bodies from requests
+app.use(express.json());
+
+// mount /api/tasks router
 app.use('/api/tasks', tasksRouter);
 
 app.listen(port, () => {
