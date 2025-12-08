@@ -1,19 +1,31 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import tasksRouter from './api/tasks';
+import cors from 'cors';
+import './db/index.js';
+import tasksRouter from './api/tasks/index.js';
+import usersRouter from './api/users/index.js';
 
 dotenv.config();
 
+const errHandler = (err, req, res, next) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(500).send(`Something went wrong!`);
+  }
+  res.status(500).send(`Hey!! You caught the error 👍👍. Here's the details: ${err.stack} `);
+};
+
 const app = express();
 
-const port = process.env.PORT;
+const port = process.env.PORT || 8080;
 
-// parse JSON bodies from requests
+app.use(cors());
 app.use(express.json());
 
-// mount /api/tasks router
 app.use('/api/tasks', tasksRouter);
+app.use('/api/users', usersRouter);
+
+app.use(errHandler);
 
 app.listen(port, () => {
-  console.info(`Server running at ${port}`);
+  console.info(`Server running at http://localhost:${port}`);
 });
