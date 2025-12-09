@@ -1,4 +1,3 @@
-// tasky-api/api/users/index.js
 import express from 'express';
 import User from './userModel';
 import asyncHandler from 'express-async-handler';
@@ -16,7 +15,10 @@ const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]
 
 async function registerUser(req, res) {
   if (!passwordRegex.test(req.body.password)) {
-    return res.status(400).json({ success: false, msg: 'Password does not meet complexity requirements.' });
+    return res.status(400).json({
+      success: false,
+      msg: 'Password does not meet complexity requirements.'
+    });
   }
   await User.create(req.body);
   res.status(201).json({ success: true, msg: 'User successfully created.' });
@@ -38,21 +40,25 @@ async function authenticateUser(req, res) {
 }
 
 // register(Create)/Authenticate User
-router.post('/', asyncHandler(async (req, res) => {
-  try {
-    if (!req.body.username || !req.body.password) {
-      return res.status(400).json({ success: false, msg: 'Username and password are required.' });
+router.post(
+  '/',
+  asyncHandler(async (req, res) => {
+    try {
+      if (!req.body.username || !req.body.password) {
+        return res
+          .status(400)
+          .json({ success: false, msg: 'Username and password are required.' });
+      }
+      if (req.query.action === 'register') {
+        await registerUser(req, res);
+      } else {
+        await authenticateUser(req, res);
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, msg: 'Internal server error.' });
     }
-    if (req.query.action === 'register') {
-      await registerUser(req, res);
-    } else {
-      await authenticateUser(req, res);
-    }
-  } catch (error) {
-    // Log the error and return a generic error message
-    console.error(error);
-    res.status(500).json({ success: false, msg: 'Internal server error.' });
-  }
-}));
+  })
+);
 
 export default router;
